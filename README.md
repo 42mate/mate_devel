@@ -52,6 +52,29 @@ Usage :
 drush ssv my_module 7XXX
 ```
 
+### Get Production Database
+
+Get a database of production is usually a pain, to get a backup we provide a page
+callback that receives a secret key, that is set with variable_set called mate_devel_key,
+and this callback makes a dump of the database using backup_migrate module and does an echo
+of the dump to send it back as response of the request.
+
+Set the mate_devel_key
+
+```
+drush vset mate_devel_key 'SUPERKEY'
+```
+
+Whit the module enabled you can do in the console
+
+```
+curl -sS http://www.mysite.com/mate_devel/backup/SUPERKEY > backup.sql
+```
+
+Be aware of the security concerns of this features if you need to use it.
+For large database this module is not a good fit, don't use it.
+
+
 ### More Ideas
 
 Are welcome :)
