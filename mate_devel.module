@@ -15,7 +15,9 @@ function mate_devel_menu() {
 
 /**
  * Creates a backup
+ *
  * @param String $key : The key for validate the access to the backup
+ *
  * @return String
  */
 function mate_devel_backup($key) {

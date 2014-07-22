@@ -3,3 +3,5 @@ description = Provides db backups, image downloading capabilities, mass content 
 package = 42mate
 core = 7.x
 version = "7.x-1.0"
+
+dependencies[] = backup_migrate
