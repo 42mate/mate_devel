@@ -1,0 +1,49 @@
+<?php
+
+/**
+ * Implements hook_menu.
+ */
+function mate_devel_menu() {
+  $items['mate_devel/backup/%'] = array(
+      'page callback' => 'mate_devel_backup',
+      'type' => MENU_CALLBACK,
+      'page arguments' => array(2),
+      'access arguments' => array('access content'),
+  );
+  return $items;
+}
+
+/**
+ * Creates a backup
+ * @param String $key : The key for validate the access to the backup
+ * @return String
+ */
+function mate_devel_backup($key) {
+  /* @var $file backup_file */  
+  /* @var $settings backup_migrate_profile */  
+  if ($key != variable_get('mate_devel_key')) {
+    return null;
+  }
+
+  module_load_include('module', 'backup_migrate');
+  backup_migrate_include('profiles', 'destinations');
+
+  $settings = backup_migrate_get_profile('default');
+  $settings->destination_id = 'manual';
+  $settings->source_id = 'db';
+  $settings->filters['compression'] = 'none';
+  
+  ob_start();
+  $file = backup_migrate_perform_backup($settings);
+  ob_end_clean();
+  
+  if ($file != false) {
+    $fn = $file->file_info['filename'] . '.' . $file->type['extension'];
+    $fp = $settings->destination->location;
+    $ff = drupal_realpath($fp . '/' . $fn); 
+    echo file_get_contents($ff);
+    unlink($ff);
+  }
+  
+  return null;
+}

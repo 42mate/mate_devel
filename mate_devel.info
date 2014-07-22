@@ -1,0 +1,5 @@
+name = 42mate Dev's Little Helpers
+description = Provides db backups, image downloading capabilities, mass content deletion, password reset, etc
+package = 42mate
+core = 7.x
+version = "7.x-1.0"
