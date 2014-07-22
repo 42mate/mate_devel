@@ -61,13 +61,6 @@ function mate_devel_drush_command()
     'aliases' => array('ssv'),
   );
 
-  $items['mate-ga-info'] = array(
-    'callback' => 'mate_gen_stats',
-    'description' => 'Gets Info From GA',
-    'arguments' => array(),
-    'aliases' => array('mgai'),
-  );
-
   return $items;
 }
 
