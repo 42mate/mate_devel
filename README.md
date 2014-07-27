@@ -52,6 +52,23 @@ Usage :
 drush ssv my_module 7XXX
 ```
 
+### Run Compass commands in the active theme.
+
+We work a lot with AT Themes and we love sass and compass, but we hate the need to go
+to the folder theme to run compass commands every time that we need to do some change
+in the sass files.
+
+That is why we have added this command to run compass commands in your active theme.
+
+Requirement : You need to have compass binary in your path, by default is in /usr/bin/compass,
+to change it use variable_set to set the value of mate_compass_path variable with your path.
+
+Usage :
+
+```
+drush compass compile
+```
+
 ### Get Production Database
 
 Get a database of production is usually a pain, to get a backup we provide a page

@@ -61,6 +61,13 @@ function mate_devel_drush_command()
     'aliases' => array('ssv'),
   );
 
+  $items['mate-sass'] = array(
+    'callback' => 'mate_compass',
+    'description' => 'Run Compass Commands in the active Theme',
+    'arguments' => array('command' => 'Compass action to Run'),
+    'aliases' => array('compass'),
+  );
+
   return $items;
 }
 
@@ -238,8 +245,35 @@ function mate_devel_backpub_db($server, $key)
   drush_log('Done Db Import', 'success');
 }
 
-
+/**
+ * Sets the schema version to a given module. Use it to test hooks install
+ * new methods for sample.
+ *
+ * @param $module
+ * @param $version
+ */
 function mate_devel_set_version($module, $version)
 {
   drupal_set_installed_schema_version($module, $version);
+}
+
+
+/**
+ * Run compass command in the active theme.
+ *
+ * Needs to setup your path to compass executable in mate_compass_path path with variable_set.
+ *
+ * @param $command : The compass command to run like compile, watch, etc.
+ */
+function mate_compass($command) {
+  $theme = variable_get('theme_default');
+
+  $compass_path = variable_get('mate_compass_path', '/usr/bin/compass');
+  if (!file_exists($compass_path)) {
+    echo "Compass executable was not found in $compass_path, set the right path in mate_compass_path drupal variable\n";
+    die();
+  }
+
+  $theme_path = drupal_get_path('theme', $theme);
+  passthru("cd $theme_path;$compass_path $command;");
 }
