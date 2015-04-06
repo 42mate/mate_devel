@@ -1,7 +1,6 @@
 <?php
 
-function mate_devel_drush_command()
-{
+function mate_devel_drush_command() {
   $items['mate-reset-pass'] = array(
     'callback' => 'mate_devel_reset_pass',
     'description' => 'Reset all the users\' passwords to 123 (by default), Also enabled any disabled account',
@@ -68,16 +67,21 @@ function mate_devel_drush_command()
     'aliases' => array('compass'),
   );
 
+  $items['mate-clean-flood'] = array(
+    'callback' => 'mate_devel_clean_flood',
+    'description' => 'Clean the Flood Table',
+    'aliases' => array('ncf'),
+  );
+
   return $items;
 }
 
-function mate_devel_delete_content($type = null)
-{
+function mate_devel_delete_content($type = NULL) {
   // Select the nodes that we want to delete.
   $result = db_select('node', 'n')
     ->fields('n', array('nid'));
 
-  if (null !== $type) {
+  if (NULL !== $type) {
     $result->condition('type', $type, '=');
   }
 
@@ -91,44 +95,49 @@ function mate_devel_delete_content($type = null)
   drush_print("$deleted_count nodes have been deleted");
 }
 
-function mate_devel_reset_pass($pass = 123)
-{
+function mate_devel_reset_pass($pass = 123) {
   require_once 'includes/password.inc';
   $hpass = user_hash_password($pass);
 
-  $ret = db_query("UPDATE {users} set pass = :pass, status = 1",
+  $ret = db_query(
+    "UPDATE {users} set pass = :pass, status = 1",
     array(':pass' => $hpass)
   );
 
+  mate_devel_clean_flood();
+
   if ($ret) {
     drush_log(dt("Password changed and accounts activated"), 'success');
-  } else {
+  }
+  else {
     drush_log(dt("Password change unsuccessful"), 'error');
   }
 }
 
-function mate_devel_get_remote_files($server)
-{
+function mate_devel_get_remote_files($server) {
   require_once drupal_get_path('module', 'mate_devel') . '/Requester.php';
 
-  $proxy_url = drush_get_option('proxy_url', null);
-  $auth = drush_get_option('proxy_auth', null);
+  $proxy_url = drush_get_option('proxy_url', NULL);
+  $auth = drush_get_option('proxy_auth', NULL);
   $method = drush_get_option('proxy_method', 'NTLM');
   $only_images = drush_get_option('images', 'all');
   $url_parts = parse_url($server);
   $domain = $url_parts['host'];
 
   $requester = new Requester();
-  if ($proxy_url !== null) {
-    $requester->setOptionProxy(array(
-      'url' => $proxy_url,
-      'auth' => $auth,
-      'auth_method' => $method
-    ));
+  if ($proxy_url !== NULL) {
+    $requester->setOptionProxy(
+      array(
+        'url' => $proxy_url,
+        'auth' => $auth,
+        'auth_method' => $method
+      )
+    );
   }
 
   if (!$requester->ping($server)) {
     drush_log("Can't reach the server : $server", 'error');
+
     return;
   }
 
@@ -137,8 +146,10 @@ function mate_devel_get_remote_files($server)
     $only_images_filter = " AND filemime LIKE 'image/%' ";
   }
 
-  $files = db_query("SELECT filename, uri FROM {file_managed}
-      WHERE uri LIKE 'public://%' $only_images_filter");
+  $files = db_query(
+    "SELECT filename, uri FROM {file_managed}
+      WHERE uri LIKE 'public://%' $only_images_filter"
+  );
 
   $files_path = conf_path() . '/files';
 
@@ -153,7 +164,8 @@ function mate_devel_get_remote_files($server)
 
     if ($file_path_enc == '.') {
       $file_path_enc = '';
-    } else {
+    }
+    else {
       $file_path_enc = '/' . $file_path_enc;
     }
 
@@ -164,7 +176,7 @@ function mate_devel_get_remote_files($server)
 
     if (!file_exists($fp)) { //If the file exists avoids the download
       if (!file_exists(dirname($fp))) {
-        mkdir(dirname($fp), 0777, true);
+        mkdir(dirname($fp), 0777, TRUE);
       }
 
       $file_url = $server . '/' . $frp;
@@ -189,16 +201,15 @@ function mate_devel_get_remote_files($server)
   }
 }
 
-function mate_devel_backpub_db($server, $key)
-{
+function mate_devel_backpub_db($server, $key) {
   require_once drupal_get_path('module', 'mate_devel') . '/Requester.php';
 
   global $base_url;
   $url_parts = parse_url($base_url);
   $domain = $url_parts['host'];
 
-  $proxy_url = drush_get_option('proxy_url', null);
-  $auth = drush_get_option('proxy_auth', null);
+  $proxy_url = drush_get_option('proxy_url', NULL);
+  $auth = drush_get_option('proxy_auth', NULL);
   $method = drush_get_option('proxy_method', 'NTLM');
   $local_db_file = '/tmp/db.sql';
   $db_url = $server . '/mate_devel/backup/' . $key;
@@ -207,16 +218,19 @@ function mate_devel_backpub_db($server, $key)
 
   $requester = new Requester();
 
-  if ($proxy_url !== null) {
-    $requester->setOptionProxy(array(
-      'url' => $proxy_url,
-      'auth' => $auth,
-      'auth_method' => $method
-    ));
+  if ($proxy_url !== NULL) {
+    $requester->setOptionProxy(
+      array(
+        'url' => $proxy_url,
+        'auth' => $auth,
+        'auth_method' => $method
+      )
+    );
   }
 
   if (!$requester->ping($server)) {
     drush_log("Can't reach the server : $server", 'error');
+
     return;
   }
 
@@ -243,17 +257,11 @@ function mate_devel_backpub_db($server, $key)
   mate_devel_get_remote_files($server); //Get Files
 
   drush_log('Done Db Import', 'success');
+
 }
 
-/**
- * Sets the schema version to a given module. Use it to test hooks install
- * new methods for sample.
- *
- * @param $module
- * @param $version
- */
-function mate_devel_set_version($module, $version)
-{
+
+function mate_devel_set_version($module, $version) {
   drupal_set_installed_schema_version($module, $version);
 }
 
@@ -276,4 +284,13 @@ function mate_compass($command) {
 
   $theme_path = drupal_get_path('theme', $theme);
   passthru("cd $theme_path;$compass_path $command;");
+}
+
+/**
+ * Clears the flood table.
+ */
+function mate_devel_clean_flood() {
+  db_query("TRUNCATE flood");
+  drush_log(dt("Flood Table Cleared"), 'success');
+
 }
